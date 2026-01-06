@@ -26,9 +26,15 @@ def label_belakang(data):
 
 ^FO30,85^A0N,28,28^FDJob No : {data['job_no']}^FS
 ^FO30,130^A0N,28,28^FDLSN    : {data['lsn']}^FS
-^FO30,175^A0N,28,28^FDSID    : {data['sid']}^FS
-^FO30,220^A0N,28,28^FDDate Rec'd : {data['date_received']}^FS
-^FO30,270^A0N,28,28^FDBox No : {data['box_no']}^FS
+
+^FO30,165
+^BCN,60,N,N,N
+^FD{data['lsn']}^FS
+
+^FO30,245^A0N,28,28^FDSID    : {data['sid']}^FS
+^FO30,285^A0N,28,28^FDDate Rec'd : {data['date_received']}^FS
+^FO30,330^A0N,28,28^FDBox No : {data['box_no']}^FS
 
 ^XZ
 """
+
