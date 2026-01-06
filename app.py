@@ -4,7 +4,41 @@ from csv_handler.csv_writer import save_printed_data
 from csv_handler.csv_reader import read_csv
 from excel_handler.excel_reader import read_excel
 
+import re
 
+
+def parse_lsn(lsn: str):
+    """
+    Memecah LSN menjadi (prefix, number)
+    Contoh:
+      CIK 25-1579582
+      -> ("CIK 25-", 1579582)
+    """
+    match = re.match(r"^(.*?)(\d+)$", lsn.strip())
+    if not match:
+        raise ValueError(f"LSN tidak valid (tidak ada angka di akhir): {lsn}")
+
+    prefix = match.group(1)
+    number = int(match.group(2))
+    return prefix, number
+
+
+def normalize_counter(value):
+    """
+    Normalisasi counter:
+    - None / kosong -> 1
+    - < 1 -> 1
+    - bukan angka -> error
+    """
+    if value is None or str(value).strip() == "":
+        return 1
+
+    try:
+        counter = int(value)
+    except ValueError:
+        raise ValueError(f"Counter bukan angka: {value}")
+
+    return max(counter, 1)
 
 def print_one_job(data):
     send_to_printer(label_depan(data))
@@ -37,3 +71,13 @@ if __name__ == "__main__":
     }
 
     print_one_job(data)
+
+if __name__ == "__main__":
+    # TEST parse_lsn
+    prefix, number = parse_lsn("CIK 25-1579582")
+    print(prefix, number)
+
+    # TEST counter
+    print(normalize_counter(""))
+    print(normalize_counter("4"))
+    print(normalize_counter(0))
