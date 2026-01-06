@@ -1,0 +1,4 @@
+PRINTER_NAME = "ZDesigner ZD230-203dpi ZPL"
+
+LABEL_WIDTH = 640   # 80mm
+LABEL_HEIGHT = 400  # 50mm
