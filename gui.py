@@ -2,22 +2,51 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 from app import print_one_job, print_from_csv, print_from_excel
-from csv_handler.csv_reader import read_csv
-from excel_handler.excel_reader import read_excel
 
 
-# ================= LOGIC =================
+def clear_form():
+    """Hapus semua input field di form GUI"""
+    entries = [
+        entry_job_no,
+        entry_box_no,
+        entry_first,
+        entry_last,
+        entry_date,
+        entry_lsn,
+        entry_sid,
+        entry_counter,
+    ]
+
+    for entry in entries:
+        entry.delete(0, tk.END)
+
 
 def print_from_form():
     data = {
         "job_no": entry_job_no.get(),
-        "box_no": entry_box_no.get(),
+        "box_no": entry_box_no.get(),          # optional
         "first": entry_first.get(),
         "last": entry_last.get(),
         "date_received": entry_date.get(),
         "lsn": entry_lsn.get(),
         "sid": entry_sid.get(),
+        "counter": entry_counter.get(),        # optional
     }
+
+    # ===== VALIDASI (KONSISTEN DENGAN EXCEL) =====
+    required_fields = [
+        "job_no",
+        "first",
+        "last",
+        "date_received",
+        "lsn",
+        "sid",
+    ]
+
+    for key in required_fields:
+        if not data[key].strip():
+            messagebox.showerror("Error", f"Field '{key}' wajib diisi")
+            return
 
     try:
         print_one_job(data)
@@ -34,26 +63,8 @@ def import_csv():
         return
 
     try:
-        rows = read_csv(file_path)
-        total_jobs = len(rows)
-
-        if total_jobs == 0:
-            messagebox.showinfo("Info", "Tidak ada data untuk dicetak")
-            return
-
-        confirm = messagebox.askyesno(
-            "Konfirmasi Cetak",
-            f"Jumlah data: {total_jobs}\n"
-            f"Total label tercetak: {total_jobs * 2}\n\n"
-            "Lanjutkan cetak?"
-        )
-
-        if not confirm:
-            return
-
         print_from_csv(file_path)
         messagebox.showinfo("Sukses", "CSV berhasil dicetak")
-
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
@@ -66,26 +77,8 @@ def import_excel():
         return
 
     try:
-        rows = read_excel(file_path)
-        total_jobs = len(rows)
-
-        if total_jobs == 0:
-            messagebox.showinfo("Info", "Tidak ada data untuk dicetak")
-            return
-
-        confirm = messagebox.askyesno(
-            "Konfirmasi Cetak",
-            f"Jumlah data: {total_jobs}\n"
-            f"Total label tercetak: {total_jobs * 2}\n\n"
-            "Lanjutkan cetak?"
-        )
-
-        if not confirm:
-            return
-
         print_from_excel(file_path)
         messagebox.showinfo("Sukses", "Excel berhasil dicetak")
-
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
@@ -93,75 +86,54 @@ def import_excel():
 # ================= UI =================
 
 root = tk.Tk()
-root.title("PT. Geoservices - Label Printer")
-root.geometry("480x500")
-root.resizable(False, False)
+root.title("Label Printer - Zebra ZD230")
+root.geometry("450x520")
 
-main_frame = tk.Frame(root, padx=20, pady=20)
-main_frame.pack(expand=True)
-
-# ===== Title =====
-tk.Label(
-    main_frame,
-    text="PT. Geoservices",
-    font=("Arial", 16, "bold")
-).pack(pady=(0, 10))
-
-tk.Label(
-    main_frame,
-    text="Zebra ZD230 Label Printer",
-    font=("Arial", 10)
-).pack(pady=(0, 20))
+frame = tk.Frame(root, padx=10, pady=10)
+frame.pack(fill="both", expand=True)
 
 
-form_frame = tk.Frame(main_frame)
-form_frame.pack()
-
-
-def add_field(label):
-    row = tk.Frame(form_frame)
-    row.pack(fill="x", pady=4)
-
-    tk.Label(row, text=label, width=14, anchor="w").pack(side="left")
-    entry = tk.Entry(row, width=35)
-    entry.pack(side="right", expand=True, fill="x")
+def add_field(label, row):
+    tk.Label(frame, text=label).grid(row=row, column=0, sticky="w")
+    entry = tk.Entry(frame, width=40)
+    entry.grid(row=row, column=1, pady=4)
     return entry
 
 
-entry_job_no = add_field("Job No")
-entry_box_no = add_field("Box No")
-entry_first = add_field("First")
-entry_last = add_field("Last")
-entry_date = add_field("Date Rec'd")
-entry_lsn = add_field("LSN")
-entry_sid = add_field("SID")
+entry_job_no = add_field("Job No", 0)
+entry_box_no = add_field("Box No (optional)", 1)
+entry_first = add_field("First", 2)
+entry_last = add_field("Last", 3)
+entry_date = add_field("Date Rec'd (dd/mm/yy)", 4)
+entry_lsn = add_field("LSN", 5)
+entry_sid = add_field("SID", 6)
+entry_counter = add_field("Counter (jumlah label belakang)", 7)
 
-
-# ===== Buttons =====
-btn_frame = tk.Frame(main_frame)
-btn_frame.pack(pady=25)
+# ===== BUTTONS =====
 
 tk.Button(
-    btn_frame,
+    frame,
     text="PRINT LABEL",
-    width=22,
     height=2,
     command=print_from_form
-).pack(pady=5)
+).grid(row=8, column=0, columnspan=2, pady=(10, 4), sticky="we")
 
 tk.Button(
-    btn_frame,
+    frame,
+    text="CLEAR FORM",
+    command=clear_form
+).grid(row=9, column=0, columnspan=2, pady=(0, 10), sticky="we")
+
+tk.Button(
+    frame,
     text="IMPORT CSV",
-    width=22,
     command=import_csv
-).pack(pady=5)
+).grid(row=10, column=0, columnspan=2, sticky="we")
 
 tk.Button(
-    btn_frame,
+    frame,
     text="IMPORT EXCEL",
-    width=22,
     command=import_excel
-).pack(pady=5)
+).grid(row=11, column=0, columnspan=2, pady=5, sticky="we")
 
 root.mainloop()
-# ================= END UI =================
