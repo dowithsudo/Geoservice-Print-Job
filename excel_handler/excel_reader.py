@@ -9,6 +9,7 @@ REQUIRED_HEADERS = [
     "date_received",
     "lsn",
     "sid",
+    "counter",          # ← TAMBAHAN
 ]
 
 
@@ -46,21 +47,16 @@ def read_excel(file_path):
                 data[key] = ""
                 continue
 
-            # KHUSUS DATE
             if key == "date_received":
+                # Normalisasi tanggal → dd/mm/yy
                 if isinstance(value, datetime):
-                    # Excel datetime → dd/mm/yy
                     data[key] = value.strftime("%d/%m/%y")
                 else:
-                    # Kalau sudah string, buang jam kalau ada
                     date_str = str(value).split(" ")[0]
-
-                    # Kalau format yyyy-mm-dd → ubah ke dd/mm/yy
                     try:
                         parsed = datetime.strptime(date_str, "%Y-%m-%d")
                         data[key] = parsed.strftime("%d/%m/%y")
                     except ValueError:
-                        # Anggap sudah benar (misal 30/12/25)
                         data[key] = date_str
             else:
                 data[key] = str(value)
