@@ -14,6 +14,9 @@ def parse_lsn(lsn: str):
       CIK 25-1579582
       -> ("CIK 25-", 1579582)
     """
+    if not lsn:
+        raise ValueError("LSN kosong")
+
     match = re.match(r"^(.*?)(\d+)$", lsn.strip())
     if not match:
         raise ValueError(f"LSN tidak valid (tidak ada angka di akhir): {lsn}")
@@ -40,10 +43,38 @@ def normalize_counter(value):
 
     return max(counter, 1)
 
+
 def print_one_job(data):
-    send_to_printer(label_depan(data))
-    send_to_printer(label_belakang(data))
-    save_printed_data(data)
+    """
+    Cetak 1 job:
+    - Label depan: 1x (base LSN)
+    - Label belakang: Nx (LSN auto-increment)
+    - CSV: simpan per LSN hasil
+    """
+
+    # --- Normalisasi counter ---
+    counter = normalize_counter(data.get("counter"))
+
+    # --- Parsing LSN ---
+    base_lsn = data.get("lsn")
+    prefix, start_number = parse_lsn(base_lsn)
+
+    # --- 1) PRINT LABEL DEPAN (SELALU PERTAMA) ---
+    data_depan = data.copy()   # defensive copy
+    send_to_printer(label_depan(data_depan))
+
+    # --- 2) PRINT LABEL BELAKANG (LOOP) ---
+    for i in range(counter):
+        computed_lsn = f"{prefix}{start_number + i}"
+
+        data_iter = data.copy()
+        data_iter["lsn"] = computed_lsn
+
+        # HAPUS counter sebelum simpan CSV
+        data_iter.pop("counter", None)
+        
+        send_to_printer(label_belakang(data_iter))
+        save_printed_data(data_iter)
 
 
 def print_from_csv(csv_file):
@@ -51,33 +82,33 @@ def print_from_csv(csv_file):
     for data in rows:
         print_one_job(data)
 
+
 def print_from_excel(excel_file):
     rows = read_excel(excel_file)
     for data in rows:
         print_one_job(data)
 
 
-
-# TEST MANUAL (boleh dihapus nanti)
+# =========================
+# TEST MANUAL (DEV ONLY)
+# =========================
 if __name__ == "__main__":
-    data = {
+    # Test helper
+    print(parse_lsn("CIK 25-1579582"))     # ('CIK 25-', 1579582)
+    print(normalize_counter(""))           # 1
+    print(normalize_counter("4"))          # 4
+    print(normalize_counter(0))            # 1
+
+    # Test print logic (counter > 1)
+    test_data = {
         "job_no": "MLG.01163",
         "box_no": "1 of 1",
         "first": "GLAB/PC-MCS/2025/12/475-1",
         "last": "GLAB/PC-MCS/2025/12/475-4",
-        "date_received": "30/12/2025",
+        "date_received": "30/12/25",
         "lsn": "CIK 25-1579582",
-        "sid": "GLAB/PC-MCS/2025/12/475-1"
+        "sid": "GLAB/PC-MCS/2025/12/475-1",
+        "counter": 4
     }
 
-    print_one_job(data)
-
-if __name__ == "__main__":
-    # TEST parse_lsn
-    prefix, number = parse_lsn("CIK 25-1579582")
-    print(prefix, number)
-
-    # TEST counter
-    print(normalize_counter(""))
-    print(normalize_counter("4"))
-    print(normalize_counter(0))
+    print_one_job(test_data)
