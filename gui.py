@@ -157,14 +157,23 @@ def import_excel():
 
         messagebox.showinfo("Sukses", message)
 
+    except PermissionError:
+        messagebox.showerror(
+            "File sedang dibuka",
+            "File Excel sedang dibuka di aplikasi lain.\n\n"
+            "Silakan tutup file tersebut terlebih dahulu,\n"
+            "lalu coba import ulang."
+        )
+
     except Exception as e:
         messagebox.showerror("Error", str(e))
+
 
 
 # ================= UI =================
 
 root = tk.Tk()
-root.title("Label Printer - Zebra ZD230")
+root.title("PT. Geoservices - Mineral")
 root.geometry("450x560")
 
 frame = tk.Frame(root, padx=10, pady=10)
