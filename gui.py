@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from excel_handler.excel_reader import read_excel
+from tkcalendar import DateEntry
+
 import re
 
 from app import print_one_job, print_from_csv, print_from_excel
@@ -186,12 +188,24 @@ def add_field(label, row):
     entry.grid(row=row, column=1, pady=4)
     return entry
 
+def add_date_field(label, row):
+    tk.Label(frame, text=label).grid(row=row, column=0, sticky="w")
+
+    date_entry = DateEntry(
+        frame,
+        width=37,
+        date_pattern="dd/mm/yy"  # sesuai format lama kamu
+    )
+    date_entry.grid(row=row, column=1, pady=4)
+
+    return date_entry
+
 
 entry_job_no = add_field("Job No", 0)
 entry_box_no = add_field("Box No (optional)", 1)
 entry_first = add_field("First", 2)
 entry_last = add_field("Last", 3)
-entry_date = add_field("Date Rec'd (dd/mm/yy)", 4)
+entry_date = add_date_field("Date Rec'd (dd/mm/yy)", 4)
 entry_lsn = add_field("LSN", 5)
 entry_sid = add_field("SID", 6)
 entry_counter = add_field("Counter (jumlah label belakang)", 7)
